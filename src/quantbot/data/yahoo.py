@@ -1,6 +1,9 @@
 import time
 import yfinance as yf
 import pandas as pd
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 def load_ohlcv(symbol: str, start: str = "2015-01-01", end: str | None = None, interval: str = "1d") -> pd.DataFrame:
     df = yf.download(symbol, start=start, end=end, interval=interval, auto_adjust=False, progress=False)
