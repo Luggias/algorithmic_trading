@@ -7,3 +7,7 @@ def load_ohlcv(symbol: str, start: str = "2015-01-01", end: str | None = None, i
     df = df.rename(columns=str.lower)[["open","high","low","close","volume"]]
     df.index = pd.to_datetime(df.index, utc=True)  # tz-aware
     return df.dropna()
+
+def available_columns(df: pd.DataFrame) -> list[str]:
+    """Return the list of available OHLCV columns in the dataframe."""
+    return list(df.columns)
