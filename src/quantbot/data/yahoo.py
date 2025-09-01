@@ -14,3 +14,7 @@ def load_ohlcv(symbol: str, start: str = "2015-01-01", end: str | None = None, i
 def available_columns(df: pd.DataFrame) -> list[str]:
     """Return the list of available OHLCV columns in the dataframe."""
     return list(df.columns)
+
+def head(df: pd.DataFrame, n: int = 5) -> pd.DataFrame:
+    """Return the first n rows of the dataframe for quick inspection."""
+    return df.head(n)
