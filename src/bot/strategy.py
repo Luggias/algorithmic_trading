@@ -1,0 +1,1 @@
+# Base Strategy class (on_bar)
