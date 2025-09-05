@@ -1,0 +1,31 @@
+# Git and version control
+.git
+.gitignore
+
+# Python cache & build artefacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# Environment & secrets
+.env
+*.env
+.streamlit/secrets.toml
+
+# Data & logs
+data/
+logs/
+*.log
+
+# Docker artefacts
+docker-compose.override.yml
+*.Dockerfile.local
+
+# OS/editor junk
+.DS_Store
+.vscode/
+.idea/
