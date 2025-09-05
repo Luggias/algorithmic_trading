@@ -8,4 +8,4 @@ Notes.md
 **/__pycache__/
 **/*.pyc
 .streamlit/secrets.toml
-data/
+data/.env
