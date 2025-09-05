@@ -14,7 +14,7 @@ We use the following format for commit headers:
 
 ## Scopes
 
-- **common**, **backend**, **frontend**, **bot**, **docker**, **tests**, etc.
+- **common**, **backend**, **frontend**, **bot**, **docker**, **tests**, **types**, **domain**
 
 ## Examples
 

@@ -1,31 +1,56 @@
-# Git and version control
+# Git / VCS
 .git
+.gitattributes
+.gitmodules
 .gitignore
 
-# Python cache & build artefacts
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.egg-info/
-dist/
+# Python caches & tooling
+**/__pycache__/
+**/*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Build / packaging artefacts
 build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+*.whl
+
+# Virtual environments
+.venv/
+venv/
+env/
 
 # Environment & secrets
 .env
+.env.*
 *.env
+!.env.example          # keep template available (harmless)
+
+# Streamlit secrets
+secrets.toml
 .streamlit/secrets.toml
 
-# Data & logs
+# Data, logs & runtime state (mount as volumes instead)
 data/
 logs/
 *.log
+reports/
+state/
 
-# Docker artefacts
+# Tests & docs (not needed at runtime; remove if you want them inside the image)
+tests/
+docs/
+
+# Docker/local overrides
 docker-compose.override.yml
 *.Dockerfile.local
 
-# OS/editor junk
+# OS / editor junk
 .DS_Store
 .vscode/
 .idea/
