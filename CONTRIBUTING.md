@@ -1,6 +1,7 @@
 
 # Commit Message Guidelines
 
+Contributions are welcome; by contributing you agree your code is licensed under Apache-2.0.
 We use the following format for commit headers:
 
 ## Types
