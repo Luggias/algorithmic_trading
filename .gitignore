@@ -12,6 +12,7 @@ secrets.toml
 .env
 *.env
 .env.*
+*.env.*
 # keep the template tracked
 !.env.example
 
