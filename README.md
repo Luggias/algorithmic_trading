@@ -30,4 +30,5 @@ Contributions are welcome; by contributing you agree your code is licensed under
 Copyright © 2025 Lukas Kapferer
 
 This product includes software developed by Lukas Kapferer.
+This distribution may inlcude third-party components.
 Licensed under the Apache License, Version 2.0.
