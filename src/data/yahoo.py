@@ -1,20 +1,53 @@
-import time
-import yfinance as yf
+from __future__ import annotations
+
+from datetime import datetime, timezone
+from typing import Final
+
 import pandas as pd
-import logging
+import yfinance as yf
 
-logging.basicConfig(level=logging.INFO)
+from common.types import Interval
 
-def load_ohlcv(symbol: str, start: str = "2015-01-01", end: str | None = None, interval: str = "1d") -> pd.DataFrame:
-    df = yf.download(symbol, start=start, end=end, interval=interval, auto_adjust=False, progress=False)
-    df = df.rename(columns=str.lower)[["open","high","low","close","volume"]]
-    df.index = pd.to_datetime(df.index, utc=True)  # tz-aware
-    return df.dropna()
+_REQUIRED_COLS: tuple[str, ...] = ("open", "high", "low", "close", "volume")
 
-def available_columns(df: pd.DataFrame) -> list[str]:
-    """Return the list of available OHLCV columns in the dataframe."""
-    return list(df.columns)
+def _normalize(df: pd.DataFrame) -> pd.DataFrame:
+    if df.empty:
+        # return an empty, correctly-shaped frame with UTC index
+        idx = pd.DatetimeIndex([], tz=timezone.utc, name="datetime")
+        return pd.DataFrame(columns=_REQUIRED_COLS, index=idx)
 
-def head(df: pd.DataFrame, n: int = 5) -> pd.DataFrame:
-    """Return the first n rows of the dataframe for quick inspection."""
-    return df.head(n)
+    df = df.rename(columns=str.lower)
+    # yfinance sometimes returns Adj Close; we ignore it here
+    df = df[["open", "high", "low", "close", "volume"]]
+    # Ensure UTC tz-aware ordered index
+    if not isinstance(df.index, pd.DatetimeIndex):
+        raise ValueError("Expected DatetimeIndex from yfinance")
+    idx = df.index
+    idx = (idx.tz_localize(timezone.utc) if idx.tz is None else idx.tz_convert(timezone.utc))
+    df.index = idx.sort_values()
+    df = df[~df.index.duplicated(keep="last")]
+    df = df.dropna()
+    return df
+
+class YahooDataSource:
+    """Thin Yahoo Finance OHLCV provider."""
+
+    _VALID_INTERVALS: Final[set[Interval]] = {"1m", "5m", "1h", "1d"}
+
+    def __init__(self, auto_adjust: bool = False, progress: bool = False) -> None:
+        self.auto_adjust = auto_adjust
+        self.progress = progress
+
+    def ohlcv(self, symbol: str, start: datetime, end: datetime | None, interval: Interval) -> pd.DataFrame:
+        if interval not in self._VALID_INTERVALS:
+            raise ValueError(f"Unsupported interval for Yahoo: {interval}")
+        # yfinance uses the same tokens for these intervals
+        df = yf.download(
+            symbol,
+            start=start,
+            end=end,
+            interval=interval,
+            auto_adjust=self.auto_adjust,
+            progress=self.progress,
+        )
+        return _normalize(df)
