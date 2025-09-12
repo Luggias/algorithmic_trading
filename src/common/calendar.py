@@ -1,9 +1,8 @@
 # Exchange calendar utilities (NYSE by default)
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
-from typing import Iterable, Literal, overload
+from typing import Literal
 
 import pandas as pd
 
