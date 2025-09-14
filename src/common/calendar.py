@@ -16,14 +16,39 @@ except ImportError as exc:
 
 from .types import Interval, _ensure_utc
 
+CalendarName = Literal["XNYS", "XNAS", "XETR", "ARCX", "24/7"]  # extend later if needed
 
-CalendarName = Literal["XNYS"]  # extend later if needed (e.g., "XNAS", "24/7")
+# Minimal built-in mapping; extend as needed or externalize later.
+_TICKER_TO_CAL: dict[str, CalendarName] = {
+    "AAPL": "XNAS",
+    "MSFT": "XNAS",
+    "SPY": "ARCX",
+}
+DEFAULT_CALENDAR: CalendarName = "XNYS"
+
+
+class _AlwaysOpenCalendar:
+    """Synthetic 24/7 calendar (UTC)."""
+    tz = timezone.utc
+
+    def schedule(self, start_date, end_date) -> pd.DataFrame:
+        idx = pd.date_range(pd.Timestamp(start_date), pd.Timestamp(end_date), freq="D", tz=self.tz)
+        return pd.DataFrame(
+            {"market_open": idx, "market_close": idx + pd.Timedelta(days=1)}
+        )
+
+
+def calendar_name_for_symbol(symbol: str) -> CalendarName:
+    """Resolve a symbol to a calendar code (fallback to DEFAULT_CALENDAR)."""
+    return _TICKER_TO_CAL.get(symbol.upper(), DEFAULT_CALENDAR)
 
 
 def get_calendar(name: CalendarName = "XNYS"):
     """Return a pandas-market-calendars calendar instance."""
-    # XNYS is the canonical code for NYSE; alias "NYSE" also works but we standardize to XNYS
-    return mcal.get_calendar("XNYS" if name == "XNYS" else name)
+    if name == "24/7":
+        return _AlwaysOpenCalendar()
+    # XNYS/XNAS/ARCX are supported ids in pandas-market-calendars
+    return mcal.get_calendar(name)
 
 
 def _schedule_utc(cal, start: datetime, end: datetime) -> pd.DataFrame:
@@ -96,7 +121,7 @@ def align_to_sessions(df: pd.DataFrame, interval: Interval = "1d", name: Calenda
 
     Assumes `df.index` is tz-aware; converts to UTC internally.
     """
-    if df.empty:
+    if df.empty or name == "24/7":
         return df
 
     if not isinstance(df.index, pd.DatetimeIndex):
@@ -127,9 +152,9 @@ def align_to_sessions(df: pd.DataFrame, interval: Interval = "1d", name: Calenda
             "close": sched["market_close"].sort_values().values,
         }
     ).sort_values("open")
-    ts = pd.DataFrame({"ts": pd.DatetimeIndex(idx).tz_convert(timezone.utc)})
-    merged = pd.merge_asof(ts.sort_values("ts"), bounds, left_on="ts", right_on="open", direction="backward")
+    ts_df = pd.DataFrame({"ts": pd.DatetimeIndex(idx).tz_convert(timezone.utc)})
+    merged = pd.merge_asof(ts_df.sort_values("ts"), bounds, left_on="ts", right_on="open", direction="backward")
     in_session = (merged["ts"] >= merged["open"]) & (merged["ts"] <= merged["close"])
     # Align mask back to original order
-    mask = in_session.reindex(ts.index).fillna(False).values
+    mask = in_session.reindex(ts_df.index).fillna(False).values
     return df.loc[mask]

@@ -56,6 +56,11 @@ A concise, enforceable development outline for this repository. It defines how w
 - Load configuration via a typed settings object (e.g., `pydantic`/`dataclass`) with clear defaults and validation.
 - **Environment variables win** over file defaults. No hardcoded secrets in code or tests.
 
+### Time format polify
+
+- We lock a single canonical time representation across the whole codebase.
+- Serialization: ISO8601 UTC strings: <YYYY-MM-DDTHH:MM:SSZ> respectively <YYYY-MM-DDTHH:MM:SS±HH:MM>
+
 ## API Contracts
 
 - Define explicit response models (e.g., `ApiResponse[T]`) instead of returning untyped dicts.
