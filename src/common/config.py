@@ -66,6 +66,8 @@ class Config:
     # Data/Network
     YF_TIMEOUT: int = _get_int("YF_TIMEOUT", 10)
     HTTP_TIMEOUT: int = _get_int("HTTP_TIMEOUT", 10)
+    MARKET_DATA_CACHE_TTL_SECONDS: int = _get_int("MARKET_DATA_CACHE_TTL_SECONDS", 900)
+    REFERENCE_DATA_CACHE_TTL_SECONDS: int = _get_int("REFERENCE_DATA_CACHE_TTL_SECONDS", 86_400)
 
     # Trading flags
     LIVE_TRADING: bool = _get_bool("LIVE_TRADING", False)
@@ -88,6 +90,10 @@ def _validate(cfg: Config) -> None:
         raise RuntimeError("LIVE_TRADING=true, but BROKER_API_KEY/SECRET missing.")
     if cfg.LOG_LEVEL.upper() not in {"CRITICAL","ERROR","WARNING","INFO","DEBUG"}:
         raise RuntimeError(f"Invalid LOG_LEVEL: {cfg.LOG_LEVEL}")
+    if cfg.MARKET_DATA_CACHE_TTL_SECONDS <= 0:
+        raise RuntimeError("MARKET_DATA_CACHE_TTL_SECONDS must be positive")
+    if cfg.REFERENCE_DATA_CACHE_TTL_SECONDS <= 0:
+        raise RuntimeError("REFERENCE_DATA_CACHE_TTL_SECONDS must be positive")
 
 CFG = Config()
 _validate(CFG)
