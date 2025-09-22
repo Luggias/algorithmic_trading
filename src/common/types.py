@@ -4,7 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timezone, timedelta
 from enum import Enum
-from typing import Literal
+from typing import Any, Generic, Literal, Mapping, TypeVar
 import math
 
 # Type aliases for semantic clarity inside research/backtests
@@ -13,6 +13,24 @@ Price = float
 Qty = float
 
 Interval = Literal["1m", "5m", "1h", "1d"]
+
+T = TypeVar("T")
+
+
+@dataclass(frozen=True, slots=True)
+class ApiResponse(Generic[T]):
+    """Canonical HTTP/IPC response envelope used across services."""
+
+    success: bool
+    data: T | None = None
+    error: str | None = None
+    metadata: Mapping[str, Any] | None = None
+
+    def require_data(self) -> T:
+        """Return payload when successful, raise otherwise."""
+        if not self.success or self.data is None:
+            raise ValueError("ApiResponse missing data; inspect error/metadata for details")
+        return self.data
 
 def _ensure_utc(ts: datetime) -> datetime:
     """Return ts as UTC-aware datetime."""
@@ -113,3 +131,54 @@ class Order:
         # 5) Normalize tags (already a tuple by type; ensure no None)
         if any(t is None for t in self.tags):
             raise ValueError("tags must not contain None")
+
+
+@dataclass(frozen=True, slots=True)
+class Fill:
+    """Execution record for a single order fill."""
+
+    order: Order
+    price: Price
+    qty: Qty
+    timestamp: datetime
+
+    def notional(self) -> Money:
+        return self.price * self.qty
+
+
+@dataclass(frozen=True, slots=True)
+class Position:
+    """Net position for a symbol with FIFO average price tracking."""
+
+    symbol: str
+    qty: Qty = 0.0
+    avg_price: Price = 0.0
+
+    def market_value(self, mark: Price) -> Money:
+        return self.qty * mark
+
+    def is_flat(self) -> bool:
+        return math.isclose(self.qty, 0.0, abs_tol=1e-12)
+
+    def apply_fill(self, fill: Fill) -> "Position":
+        if fill.order.symbol != self.symbol:
+            raise ValueError("Fill symbol mismatch")
+
+        signed_qty = fill.qty * fill.order.side.sign()
+        new_qty = self.qty + signed_qty
+
+        if self.is_flat():
+            new_avg = fill.price
+        elif math.isclose(new_qty, 0.0, abs_tol=1e-12):
+            new_avg = 0.0
+        elif self.qty > 0 and new_qty > 0:
+            total_cost = self.avg_price * self.qty + fill.price * signed_qty
+            new_avg = total_cost / new_qty
+        elif self.qty < 0 and new_qty < 0:
+            total_cost = self.avg_price * abs(self.qty) + fill.price * abs(signed_qty)
+            new_avg = total_cost / abs(new_qty)
+        else:
+            # Crossing through zero: realized PnL handled at portfolio level; carry new side at fill price
+            new_avg = fill.price
+
+        return Position(symbol=self.symbol, qty=new_qty, avg_price=new_avg)
