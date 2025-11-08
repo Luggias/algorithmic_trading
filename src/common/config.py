@@ -95,5 +95,16 @@ def _validate(cfg: Config) -> None:
     if cfg.REFERENCE_DATA_CACHE_TTL_SECONDS <= 0:
         raise RuntimeError("REFERENCE_DATA_CACHE_TTL_SECONDS must be positive")
 
+def _ensure_cache_directories() -> None:
+    """Ensure cache directories exist at startup as per AGENT.md."""
+    root = get_root()
+    cache_dir = root / "cache"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    # Also ensure .data/cache for backward compatibility
+    data_cache_dir = root / ".data" / "cache"
+    data_cache_dir.mkdir(parents=True, exist_ok=True)
+
+
 CFG = Config()
 _validate(CFG)
+_ensure_cache_directories()

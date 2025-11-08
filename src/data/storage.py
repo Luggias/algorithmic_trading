@@ -7,10 +7,9 @@ from pathlib import Path
 from typing import Protocol
 
 import pandas as pd
-import polars
 
-from common.config import CFG
-from common.types import Interval
+from src.common.config import CFG
+from src.common.types import Interval
 
 # -------------------------
 # Interfaces / type helpers
@@ -82,6 +81,7 @@ class ParquetOHLCVCache:
 
     def _path(self, symbol: str, interval: Interval) -> Path:
         safe_symbol = symbol.replace("/", "-").replace(":", "-")
+        # Use WORKDIR/cache/ as per AGENT.md
         return (self.root / "cache" / self.namespace / f"{safe_symbol}_{interval}.parquet").resolve()
 
     def read(self, symbol: str, interval: Interval) -> pd.DataFrame | None:
@@ -138,9 +138,10 @@ def load_ohlcv_cached(
     Contract:
       - returned index is tz-aware UTC, strictly increasing, unique
       - required columns: open, high, low, close, volume
-      - cache stored under CFG.DATA_DIR/cache/{namespace}/{symbol}_{interval}.parquet
+      - cache stored under {WORKDIR}/cache/{namespace}/{symbol}_{interval}.parquet
     """
-    cache = ParquetOHLCVCache(Path(CFG.DATA_DIR), namespace=namespace)
+    from src.common.config import get_root
+    cache = ParquetOHLCVCache(get_root(), namespace=namespace)
 
     cached = cache.read(symbol, interval)
     fetch_start = start

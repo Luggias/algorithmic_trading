@@ -14,7 +14,7 @@ except ImportError as exc:
         "Install via: pip install pandas-market-calendars"
     ) from exc
 
-from .types import Interval, _ensure_utc
+from src.common.types import Interval, _ensure_utc
 
 CalendarName = Literal["XNYS", "XNAS", "XETR", "ARCX", "24/7"]  # extend later if needed
 

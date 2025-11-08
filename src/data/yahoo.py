@@ -6,7 +6,7 @@ from typing import Final
 import pandas as pd
 import yfinance as yf
 
-from common.types import Interval
+from src.common.types import Interval
 
 _REQUIRED_COLS: tuple[str, ...] = ("open", "high", "low", "close", "volume")
 

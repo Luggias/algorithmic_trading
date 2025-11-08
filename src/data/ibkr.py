@@ -9,6 +9,8 @@ from typing import Literal
 import polars as pl
 from ib_insync import IB, Stock  # pip install ib-insync
 
+from src.common.config import get_root
+
 BarSize = Literal["1 day", "1 hour", "30 mins", "15 mins", "5 mins", "1 min"]
 What = Literal["TRADES", "MIDPOINT", "BID", "ASK"]
 
@@ -33,7 +35,7 @@ class IBConfig:
     port: int = int(os.getenv("IB_PORT", "7497"))
     client_id: int = int(os.getenv("IB_CLIENT_ID", "1"))
     use_delayed: bool = bool(int(os.getenv("IB_USE_DELAYED", "0")))
-    cache_root: Path = Path(os.getenv("WORKDIR", ".")).resolve()
+    cache_root: Path = get_root()  # Use consistent project root resolution
 
 class IBKRSource:
     """Thin wrapper around ib_insync for historical bars, chunked, UTC tz-aware, using Polars."""

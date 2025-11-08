@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
-from common.types import Order, OrderType, Side, Bar
+from src.common.types import Order, OrderType, Side, Bar
 
 @dataclass(frozen=True)
 class NextBarOpenExecution:
