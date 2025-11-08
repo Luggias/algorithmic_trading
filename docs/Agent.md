@@ -83,6 +83,7 @@ A concise, enforceable development outline for this repository. It defines how w
 - Type hints are mandatory at public boundaries; mypy must pass with `--strict` (or project policy).
 - Prefer pure functions for business logic; isolate side effects.
 - Time handling is **UTC** internally; convert at the edges.
+- Prefer polars over pandas. Polars scales better and performs faster on large datasets.
 
 ## Logging & Observability
 
