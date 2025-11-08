@@ -8,9 +8,9 @@
 - Always check for unused imports
 - Avoid redundant code
 - Prioritize pyproject.toml files opposed to requirements.txt files
-- Secrets live in C:/.../WORKDIR/.../.env
-- API response type: ...
-- Cache root: C:/.../WORKDIR/.../cache/
+- Secrets live in ${WORKDIR}/.env (WORKDIR = project root)
+- API response type: Typed models (e.g., `ApiResponse[T]`) - see API Contracts section
+- Cache root: ${WORKDIR}/cache/
 - All inline comments and docstrings in English.
 
 ## Purpose
@@ -49,14 +49,15 @@ A concise, enforceable development outline for this repository. It defines how w
 
 ## Configuration & Secrets
 
-- Secrets live in the project **workdir** `.env` file and are never committed.
+- Secrets live in the project root `.env` file and are never committed.
+  - `WORKDIR` = project root directory
   - POSIX: `${WORKDIR}/.env`  
     Windows: `C:\…\WORKDIR\…\.env`
 - Provide `.env.example` with variable names and safe placeholders.
 - Load configuration via a typed settings object (e.g., `pydantic`/`dataclass`) with clear defaults and validation.
 - **Environment variables win** over file defaults. No hardcoded secrets in code or tests.
 
-### Time format polify
+### Time format policy
 
 - We lock a single canonical time representation across the whole codebase.
 - Serialization: ISO8601 UTC strings: <YYYY-MM-DDTHH:MM:SSZ> respectively <YYYY-MM-DDTHH:MM:SS±HH:MM>
@@ -69,7 +70,7 @@ A concise, enforceable development outline for this repository. It defines how w
 
 ## Caching
 
-- Cache root is `${WORKDIR}/cache/` (Windows: `C:\…\WORKDIR\…\cache\`). Ensure the directory is created at startup.
+- Cache root is `${WORKDIR}/cache/` where `WORKDIR` is the project root (Windows: `C:\…\WORKDIR\…\cache\`). Ensure the directory is created at startup.
 - Name cache keys deterministically. Define TTL/invalidation policy per cache.
 - Cache is an optimization, not a source of truth; corrupted entries must fail safely and be rebuilt.
 
@@ -110,7 +111,7 @@ We use the following format for commit headers:
 
 #### Scopes
 
-- **backend**, **backtest**, **bot**, **common**, **data**, **frontend**, **tests**, **streamlit**, **docker**, **kubernetes**, **miscellaneous**
+- **backend**, **backtest**, **bot**, **common**, **data**, **frontend**, **streamlit**, **tests**, **docker**, **kubernetes**, **miscellaneous**
 
 #### Examples
 
