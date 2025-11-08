@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Protocol
 
 import pandas as pd
+import polars
 
 from common.config import CFG
 from common.types import Interval
